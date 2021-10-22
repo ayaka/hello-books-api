@@ -29,3 +29,16 @@ def handle_books():
                 }
             )
         return jsonify(books_response)
+
+@books_bp.route("/<book_id>", methods=["GET"])
+def handle_book(book_id):
+    book = Book.query.get(book_id)
+
+    if book is None:
+        return make_response(f"Book {book_id} not found", 404)
+        
+    return {
+        "id": book.id,
+        "title": book.title,
+        "description": book.description
+    }
