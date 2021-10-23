@@ -4,7 +4,7 @@ from flask import Blueprint, jsonify, make_response, request
 
 books_bp = Blueprint("books", __name__, url_prefix="/books")
 
-@books_bp.route("", methods=["GET", "POST"])
+@books_bp.route("", methods=["GET", "POST", "PUT"])
 def handle_books():
     if request.method == "POST":
         request_body = request.get_json()
@@ -33,15 +33,29 @@ def handle_books():
             )
         return jsonify(books_response)
 
-@books_bp.route("/<book_id>", methods=["GET"])
+@books_bp.route("/<book_id>", methods=["GET", "PUT"])
 def handle_book(book_id):
     book = Book.query.get(book_id)
 
     if book is None:
-        return make_response(f"Book {book_id} not found", 404)
+        return make_response(f"Book #{book_id} not found", 404)
 
-    return {
-        "id": book.id,
-        "title": book.title,
-        "description": book.description
-    }
+    if request.method == "PUT":
+        request_body = request.get_json()
+
+        if "title" not in request_body or "description" not in request_body:
+            return make_response("Invalid Request", 400)
+
+        book.title = request_body["title"]
+        book.description = request_body["description"]
+
+        db.session.commit()
+
+        return make_response(f"Book #{book_id} successfully updated", 200)
+    
+    elif request.method == "GET":
+        return {
+            "id": book.id,
+            "title": book.title,
+            "description": book.description
+        }
