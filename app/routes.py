@@ -4,7 +4,7 @@ from flask import Blueprint, jsonify, make_response, request
 
 books_bp = Blueprint("books", __name__, url_prefix="/books")
 
-@books_bp.route("", methods=["GET", "POST", "PUT"])
+@books_bp.route("", methods=["GET", "POST"])
 def handle_books():
     if request.method == "POST":
         request_body = request.get_json()
@@ -33,7 +33,7 @@ def handle_books():
             )
         return jsonify(books_response)
 
-@books_bp.route("/<book_id>", methods=["GET", "PUT"])
+@books_bp.route("/<book_id>", methods=["GET", "PUT", "DELETE"])
 def handle_book(book_id):
     book = Book.query.get(book_id)
 
@@ -52,6 +52,12 @@ def handle_book(book_id):
         db.session.commit()
 
         return make_response(f"Book #{book_id} successfully updated", 200)
+    
+    elif request.method == "DELETE":
+        db.session.delete(book)
+        db.session.commit()
+
+        return make_response(f"Book #{book_id} successfully deleted")
     
     elif request.method == "GET":
         return {
