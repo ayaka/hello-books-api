@@ -1,8 +1,10 @@
 from app import db
 from app.models.book import Book
+from app.models.author import Author
 from flask import Blueprint, jsonify, make_response, request
 
 books_bp = Blueprint("books", __name__, url_prefix="/books")
+authors_bp = Blueprint("authors", __name__, url_prefix="/authors")
 
 @books_bp.route("", methods=["GET", "POST"])
 def handle_books():
@@ -10,7 +12,7 @@ def handle_books():
         request_body = request.get_json()
         if "title" not in request_body or "description" not in request_body:
             return make_response("Invalid Request", 400)
-            
+
         new_book = Book(
             title = request_body["title"],
             description = request_body["description"]
@@ -56,16 +58,37 @@ def handle_book(book_id):
         db.session.commit()
 
         return make_response(f"Book #{book_id} successfully updated", 200)
-    
+
     elif request.method == "DELETE":
         db.session.delete(book)
         db.session.commit()
 
         return make_response(f"Book #{book_id} successfully deleted")
-    
+
     elif request.method == "GET":
         return {
             "id": book.id,
             "title": book.title,
             "description": book.description
         }
+
+@authors_bp.route("", methods=["GET", "POST"])
+def handle_authors():
+    if request.method == "GET":
+        authors = Author.query.all()
+        response_body = [author.to_dict for author in authors]
+        return jsonify(response_body)
+
+    elif request.method == "POST":
+        request_body = request.get_json()
+
+        if "name" not in request_body:
+            return make_response("Invalid Request", 400)
+
+        new_author = Author.from_dict(request_body)
+
+        db.session.add(new_author)
+        db.session.commit()
+
+        return make_response(f"Author {new_author.name} created", 201)
+
