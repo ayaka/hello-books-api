@@ -28,11 +28,12 @@ def create_app(test_config=None):
     # import placed here, not at the top so that database is configured first
     from app.models.book import Book
     from app.models.author import Author
+    from app.models.genre import Genre
+    from app.models.book_genre import BookGenre
 
-    from .routes import books_bp
+    from .routes import books_bp, authors_bp, genre_bp
     app.register_blueprint(books_bp)
-
-    from .routes import authors_bp
     app.register_blueprint(authors_bp)
+    app.register_blueprint(genre_bp)
 
     return app
